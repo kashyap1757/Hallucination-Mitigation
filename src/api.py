@@ -4,7 +4,7 @@ api.py — FastAPI for Hallucination Mitigation Pipeline
 Provides REST endpoints to query the pipeline, inspect results, and run evaluations.
 
 Usage:
-    uvicorn api:app --reload --port 8000
+    uvicorn api:app --app-dir src --reload --port 8000
 
 Endpoints:
     GET  /                       → API info & status
@@ -30,8 +30,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field
 
-# Add project root
-PROJECT_DIR = Path(__file__).parent
+# Add src/ to path; data and results live at the repo root
+PROJECT_DIR = Path(__file__).resolve().parent
+ROOT_DIR = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_DIR))
 
 from pipeline import (
@@ -84,7 +85,7 @@ def init_pipeline():
     """Initialize the pipeline with real TruthfulQA data if available, else synthetic."""
     global DATASET, PIPELINE, STORED_RESULTS
 
-    csv_path = PROJECT_DIR / "dataset" / "generation_validation.csv"
+    csv_path = ROOT_DIR / "data" / "generation_validation.csv"
     if csv_path.exists():
         DATASET = load_truthfulqa_csv(str(csv_path))
         print(f"[API] Loaded {len(DATASET)} questions from TruthfulQA CSV")
@@ -100,7 +101,7 @@ def init_pipeline():
         print(f"[API] Using synthetic dataset ({len(DATASET)} questions)")
 
     # Load stored results if available
-    results_path = PROJECT_DIR / "results.json"
+    results_path = ROOT_DIR / "results" / "results.json"
     if results_path.exists():
         with open(results_path, encoding="utf-8") as f:
             STORED_RESULTS = json.load(f)

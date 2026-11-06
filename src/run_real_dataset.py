@@ -5,9 +5,9 @@ Loads the TruthfulQA generation_validation.csv from the dataset/ folder,
 runs the full 4-stage pipeline, generates results and evaluation charts.
 
 Usage:
-    python run_real_dataset.py                   # run on all 4072 samples
-    python run_real_dataset.py --limit 100       # run on first 100 samples
-    python run_real_dataset.py --limit 50 --ablation   # run ablation on 50 samples
+    python src/run_real_dataset.py                   # run on all 4072 samples
+    python src/run_real_dataset.py --limit 100       # run on first 100 samples
+    python src/run_real_dataset.py --limit 50 --ablation   # run ablation on 50 samples
 """
 
 import argparse
@@ -21,8 +21,9 @@ from pathlib import Path
 
 import numpy as np
 
-# Add project root to path
-PROJECT_DIR = Path(__file__).parent
+# Add src/ to path; data and results live at the repo root
+PROJECT_DIR = Path(__file__).resolve().parent
+ROOT_DIR = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_DIR))
 
 from pipeline import (
@@ -364,7 +365,7 @@ def main():
     parser.add_argument("--threshold", type=float, default=0.50, help="Flag threshold")
     args = parser.parse_args()
     
-    csv_path = PROJECT_DIR / "dataset" / "generation_validation.csv"
+    csv_path = ROOT_DIR / "data" / "generation_validation.csv"
     if not csv_path.exists():
         print(f"Dataset not found: {csv_path}")
         sys.exit(1)
@@ -404,7 +405,7 @@ def main():
         ablation_data = run_ablation(abl_dataset)
     
     # Save results
-    output_path = PROJECT_DIR / "results_truthfulqa.json"
+    output_path = ROOT_DIR / "results" / "results_truthfulqa.json"
     
     # Also save the standard results.json for evaluate.py compatibility
     standard_out = []
@@ -421,15 +422,17 @@ def main():
             "sample_distribution": r.details.get("sample_dist", {}),
         })
     
-    with open(PROJECT_DIR / "results.json", "w", encoding="utf-8") as f:
+    with open(ROOT_DIR / "results" / "results.json", "w", encoding="utf-8") as f:
         json.dump(standard_out, f, indent=2, ensure_ascii=False)
-    print(f"\nStandard results saved to results.json")
+    print(f"\nStandard results saved to results/results.json")
     
     save_results(results, output_path, ablation_data)
     
     # Generate charts
     print("\nGenerating evaluation charts...")
-    generate_charts(results, metrics, PROJECT_DIR)
+    figures_dir = ROOT_DIR / "figures" / "truthfulqa"
+    figures_dir.mkdir(parents=True, exist_ok=True)
+    generate_charts(results, metrics, figures_dir)
     
     # Print top-10 most hallucinated questions
     print(f"\n{'='*60}")

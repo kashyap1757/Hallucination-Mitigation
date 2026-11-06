@@ -381,13 +381,13 @@ The dataset covers 38 categories of questions designed to trigger hallucinations
 
 | File | Purpose | Lines |
 |---|---|---|
-| `pipeline.py` | Core 4-stage pipeline (9 modules) | ~620 |
-| `run_real_dataset.py` | Runs pipeline on TruthfulQA CSV | ~300 |
-| `evaluate.py` | Static charts & metrics report | ~180 |
-| `dashboard.py` | Interactive Streamlit dashboard | ~740 |
-| `api.py` | FastAPI REST endpoints | ~420 |
-| `dataset/generation_validation.csv` | TruthfulQA dataset (817 Qs) | - |
-| `results.json` | Pipeline output for all questions | - |
+| `src/pipeline.py` | Core 4-stage pipeline (9 modules) | ~620 |
+| `src/run_real_dataset.py` | Runs pipeline on TruthfulQA CSV | ~300 |
+| `src/evaluate.py` | Static charts & metrics report | ~180 |
+| `src/dashboard.py` | Interactive Streamlit dashboard | ~740 |
+| `src/api.py` | FastAPI REST endpoints | ~420 |
+| `data/generation_validation.csv` | TruthfulQA dataset (817 Qs) | - |
+| `results/results.json` | Pipeline output for all questions | - |
 
 ---
 
@@ -395,16 +395,16 @@ The dataset covers 38 categories of questions designed to trigger hallucinations
 
 ```bash
 # 1. Run the pipeline on real TruthfulQA
-python run_real_dataset.py
+python src/run_real_dataset.py
 
 # 2. Generate evaluation charts
-python evaluate.py
+python src/evaluate.py
 
 # 3. Launch interactive dashboard
-python -m streamlit run dashboard.py
+python -m streamlit run src/dashboard.py
 
 # 4. Start REST API
-python api.py
+python src/api.py
 # Then visit http://localhost:8000/docs for Swagger UI
 ```
 

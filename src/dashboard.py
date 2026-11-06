@@ -136,8 +136,8 @@ from pipeline import (
 from run_real_dataset import load_truthfulqa_csv
 
 # ── Load real dataset ────────────────────────────────────────────────────────
-PROJECT_DIR = Path(__file__).parent
-CSV_PATH = PROJECT_DIR / "dataset" / "generation_validation.csv"
+ROOT_DIR = Path(__file__).resolve().parent.parent
+CSV_PATH = ROOT_DIR / "data" / "generation_validation.csv"
 
 @st.cache_data
 def get_dataset():

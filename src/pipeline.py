@@ -606,10 +606,10 @@ def main():
             "hallucination_score": round(r.hallucination_score, 4),
             "sample_distribution": r.details.get("sample_dist", {}),
         })
-    output_path = Path(__file__).parent / "results.json"
+    output_path = Path(__file__).resolve().parent.parent / "results" / "results.json"
     with open(output_path, "w") as f:
         json.dump(out, f, indent=2)
-    print("\nResults saved to results.json")
+    print("\nResults saved to results/results.json")
 
 
 if __name__ == "__main__":

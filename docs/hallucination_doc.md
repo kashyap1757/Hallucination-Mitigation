@@ -138,15 +138,15 @@ No mitigation     → ~65%    ❌ Baseline
    ```
 4. **Run the pipeline:**
    ```bash
-   python pipeline.py
+   python src/pipeline.py
    ```
 5. **Evaluate results:**
    ```bash
-   python evaluate.py
+   python src/evaluate.py
    ```
 6. **Swap in real TruthfulQA** by passing the `--real` flag:
    ```bash
-   python pipeline.py --real
+   python src/pipeline.py --real
    ```
 
 ---

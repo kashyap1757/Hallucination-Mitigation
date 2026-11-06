@@ -2,10 +2,10 @@
 import csv
 import os
 
-BASE = os.path.dirname(__file__)
+BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 for fname in ["generation_validation.csv", "multiple_choice_validation.csv"]:
-    path = os.path.join(BASE, "dataset", fname)
+    path = os.path.join(BASE, "data", fname)
     print(f"\n{'='*60}")
     print(f"FILE: {fname}")
     print(f"{'='*60}")

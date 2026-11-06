@@ -2,7 +2,7 @@
 import json
 from pathlib import Path
 
-base = Path(__file__).parent
+base = Path(__file__).resolve().parent.parent / "results"
 
 with open(base / "results_truthfulqa.json", encoding="utf-8") as f:
     data = json.load(f)

@@ -74,7 +74,7 @@ def nli_entailment_score(answer: str, context: str) -> float:
 
 ## 4. Deep Dive: What We Did Right Now (Production Implementation)
 
-We implemented [run_production_test.py](file:///c:/Users/KASHYAP/Desktop/STUDY/2nd%20SEM/Mini%20Project/Hallucination%20Mitigation/run_production_test.py), introducing production ML components:
+We implemented [run_production_test.py](../src/run_production_test.py), introducing production ML components:
 
 ```
 [TruthfulQA 817 Questions]
@@ -197,19 +197,19 @@ TruthfulQA evaluates susceptibility across adversarial categories. The productio
 
 ## 6. Generated Visual Artifacts
 
-The production evaluation script generated 6 publication-ready visual evaluation figures in the project root:
+The production evaluation script generated 6 publication-ready visual evaluation figures in [`figures/production/`](../figures/production/):
 
-1. [prod_confusion_matrix.png](file:///c:/Users/KASHYAP/Desktop/STUDY/2nd%20SEM/Mini%20Project/Hallucination%20Mitigation/prod_confusion_matrix.png):
+1. [prod_confusion_matrix.png](../figures/production/prod_confusion_matrix.png):
    - Detailed $2 \times 2$ matrix showcasing TP (59), FP (202), FN (19), and TN (537).
-2. [prod_score_distribution.png](file:///c:/Users/KASHYAP/Desktop/STUDY/2nd%20SEM/Mini%20Project/Hallucination%20Mitigation/prod_score_distribution.png):
+2. [prod_score_distribution.png](../figures/production/prod_score_distribution.png):
    - Histogram distribution of composite Hallucination Risk Scores with the $\tau = 0.50$ decision threshold.
-3. [prod_uncertainty_vs_nli.png](file:///c:/Users/KASHYAP/Desktop/STUDY/2nd%20SEM/Mini%20Project/Hallucination%20Mitigation/prod_uncertainty_vs_nli.png):
+3. [prod_uncertainty_vs_nli.png](../figures/production/prod_uncertainty_vs_nli.png):
    - Scatter plot correlating semantic entropy against DeBERTa NLI entailment scores for correct vs. wrong answers.
-4. [prod_performance_radar.png](file:///c:/Users/KASHYAP/Desktop/STUDY/2nd%20SEM/Mini%20Project/Hallucination%20Mitigation/prod_performance_radar.png):
+4. [prod_performance_radar.png](../figures/production/prod_performance_radar.png):
    - Multi-metric radar chart contrasting Accuracy, Precision, Recall, Specificity, and F1.
-5. [prod_category_breakdown.png](file:///c:/Users/KASHYAP/Desktop/STUDY/2nd%20SEM/Mini%20Project/Hallucination%20Mitigation/prod_category_breakdown.png):
+5. [prod_category_breakdown.png](../figures/production/prod_category_breakdown.png):
    - Horizontal bar comparison of accuracy and detection rates across TruthfulQA categories.
-6. [prod_ablation_comparison.png](file:///c:/Users/KASHYAP/Desktop/STUDY/2nd%20SEM/Mini%20Project/Hallucination%20Mitigation/prod_ablation_comparison.png):
+6. [prod_ablation_comparison.png](../figures/production/prod_ablation_comparison.png):
    - Side-by-side grouped bar chart illustrating the evolution across all 6 ablation configurations.
 
 ---
@@ -218,18 +218,18 @@ The production evaluation script generated 6 publication-ready visual evaluation
 
 ### Run Full Production Evaluation (817 Questions + Ablation)
 ```powershell
-python run_production_test.py --ablation
+python src/run_production_test.py --ablation
 ```
 
 ### Run Quick Verification (First 50 Questions)
 ```powershell
-python run_production_test.py --limit 50
+python src/run_production_test.py --limit 50
 ```
 
 ### Inspect Output Results
 The complete JSON metrics and per-sample classifications are saved in:
-- `results_production.json` (Full production run with metadata and category breakdowns)
-- `results.json` (Active results consumed by the interactive UI dashboard)
+- `results/production/results_production.json` (Full production run with metadata and category breakdowns)
+- `results/results.json` (Active results consumed by the interactive UI dashboard)
 
 ---
 

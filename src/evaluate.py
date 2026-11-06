@@ -22,12 +22,14 @@ except ImportError:
     HAS_PLOT = False
 
 
-SCRIPT_DIR = Path(__file__).parent
+ROOT_DIR = Path(__file__).resolve().parent.parent
+RESULTS_PATH = ROOT_DIR / "results" / "results.json"
+FIGURES_DIR = ROOT_DIR / "figures" / "evaluation"
 
 
 def load_results(path=None):
     if path is None:
-        path = SCRIPT_DIR / "results.json"
+        path = RESULTS_PATH
     with open(path) as f:
         return json.load(f)
 
@@ -87,7 +89,7 @@ def confusion_bar(results):
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
     plt.tight_layout()
-    out_path = SCRIPT_DIR / "confusion.png"
+    out_path = FIGURES_DIR / "confusion.png"
     plt.savefig(out_path, dpi=150, bbox_inches="tight")
     print(f"  Saved {out_path}")
     plt.close()
@@ -110,7 +112,7 @@ def score_distribution(results):
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
     plt.tight_layout()
-    out_path = SCRIPT_DIR / "score_dist.png"
+    out_path = FIGURES_DIR / "score_dist.png"
     plt.savefig(out_path, dpi=150, bbox_inches="tight")
     print(f"  Saved {out_path}")
     plt.close()
@@ -141,7 +143,7 @@ def score_breakdown_chart(results):
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
     plt.tight_layout()
-    out_path = SCRIPT_DIR / "score_breakdown.png"
+    out_path = FIGURES_DIR / "score_breakdown.png"
     plt.savefig(out_path, dpi=150, bbox_inches="tight")
     print(f"  Saved {out_path}")
     plt.close()
@@ -166,7 +168,7 @@ def radar_chart(metrics):
     ax.set_title("Pipeline Performance Radar", fontsize=14, fontweight="bold", pad=20)
     ax.grid(True, alpha=0.3)
     plt.tight_layout()
-    out_path = SCRIPT_DIR / "performance_radar.png"
+    out_path = FIGURES_DIR / "performance_radar.png"
     plt.savefig(out_path, dpi=150, bbox_inches="tight")
     print(f"  Saved {out_path}")
     plt.close()
@@ -220,7 +222,7 @@ def print_detailed_report(metrics):
 
 if __name__ == "__main__":
     path = sys.argv[1] if len(sys.argv) > 1 else None
-    resolved = Path(path) if path else (SCRIPT_DIR / "results.json")
+    resolved = Path(path) if path else RESULTS_PATH
 
     if not resolved.exists():
         print(f"results.json not found at {resolved}. Run pipeline.py first.")

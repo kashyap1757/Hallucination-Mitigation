@@ -9,9 +9,9 @@ Upgrades the demo pipeline with real ML models:
 Evaluates on the full TruthfulQA dataset (817 questions).
 
 Usage:
-    python run_production_test.py                   # full 817 samples
-    python run_production_test.py --limit 100       # first 100
-    python run_production_test.py --ablation        # include ablation study
+    python src/run_production_test.py                   # full 817 samples
+    python src/run_production_test.py --limit 100       # first 100
+    python src/run_production_test.py --ablation        # include ablation study
 """
 
 import argparse
@@ -39,7 +39,7 @@ if sys.platform == "win32":
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
-PROJECT_DIR = Path(__file__).parent
+ROOT_DIR = Path(__file__).resolve().parent.parent
 
 # ─────────────────────────────────────────────────────────────────────────────
 # 0.  Load TruthfulQA CSV
@@ -686,7 +686,7 @@ def main():
     parser.add_argument("--threshold", type=float, default=0.50, help="Flag threshold")
     args = parser.parse_args()
 
-    csv_path = PROJECT_DIR / "dataset" / "generation_validation.csv"
+    csv_path = ROOT_DIR / "data" / "generation_validation.csv"
     if not csv_path.exists():
         print(f"Dataset not found: {csv_path}")
         sys.exit(1)
@@ -873,14 +873,13 @@ def main():
     if ablation_data:
         output["ablation"] = ablation_data
 
-    results_dir = PROJECT_DIR / "production_results"
-    results_dir.mkdir(exist_ok=True)
+    results_dir = ROOT_DIR / "results" / "production"
+    results_dir.mkdir(parents=True, exist_ok=True)
+    figures_dir = ROOT_DIR / "figures" / "production"
+    figures_dir.mkdir(parents=True, exist_ok=True)
 
     output_path = results_dir / "results_production.json"
     with open(output_path, "w", encoding="utf-8") as f:
-        json.dump(output, f, indent=2, ensure_ascii=False)
-    # Also keep a copy in project root for backward compatibility
-    with open(PROJECT_DIR / "results_production.json", "w", encoding="utf-8") as f:
         json.dump(output, f, indent=2, ensure_ascii=False)
     print(f"\n  📄 Results saved to {output_path}")
 
@@ -899,15 +898,13 @@ def main():
         }
         for r in results
     ]
-    with open(PROJECT_DIR / "results.json", "w", encoding="utf-8") as f:
+    with open(ROOT_DIR / "results" / "results.json", "w", encoding="utf-8") as f:
         json.dump(standard_out, f, indent=2, ensure_ascii=False)
-    print(f"  📄 Standard results saved to results.json")
+    print(f"  📄 Standard results saved to results/results.json")
 
     # ── Generate Charts ──
-    print(f"\n  📊 Generating evaluation charts in {results_dir}...")
-    generate_all_charts(results, metrics, cat_metrics, ablation_data, results_dir)
-    # Also generate in project root
-    generate_all_charts(results, metrics, cat_metrics, ablation_data, PROJECT_DIR)
+    print(f"\n  📊 Generating evaluation charts in {figures_dir}...")
+    generate_all_charts(results, metrics, cat_metrics, ablation_data, figures_dir)
 
     print(f"\n{'=' * 70}")
     print(f"  ✅ PRODUCTION EVALUATION COMPLETE")
