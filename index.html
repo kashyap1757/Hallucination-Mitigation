@@ -427,6 +427,12 @@
       gap: 20px;
       margin-bottom: 48px;
     }
+    .results-subhead {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 16px;
+    }
     .result-card {
       padding: 32px 28px;
       background: var(--bg-card);
@@ -700,48 +706,73 @@
       <div class="reveal">
         <div class="section-label">📊 Results</div>
         <h2 class="section-title">Evaluation on TruthfulQA</h2>
-        <p class="section-desc">Evaluated on synthetic TruthfulQA-style datasets and the full 817-question TruthfulQA benchmark.</p>
+        <p class="section-desc">Production evaluation with FAISS + Sentence-Transformers retrieval and DeBERTa-v3 NLI on the full 817-question TruthfulQA benchmark.</p>
       </div>
 
+      <h3 class="results-subhead reveal">Full benchmark — 817 questions</h3>
       <div class="results-grid reveal">
         <div class="result-card">
-          <div class="result-value accent">~65%</div>
+          <div class="result-value green">90.45%</div>
+          <div class="result-label">Answer Accuracy</div>
+          <div class="result-sub">739 of 817 correct</div>
+        </div>
+        <div class="result-card">
+          <div class="result-value cyan">75.6%</div>
+          <div class="result-label">Detection Recall</div>
+          <div class="result-sub">Caught 59 of 78 wrong answers</div>
+        </div>
+        <div class="result-card">
+          <div class="result-value amber">31.95%</div>
+          <div class="result-label">Gate Flag Rate</div>
+          <div class="result-sub">Precision 22.6% · F1 34.8%</div>
+        </div>
+        <div class="result-card">
+          <div class="result-value accent">371 s</div>
+          <div class="result-label">Runtime</div>
+          <div class="result-sub">Full benchmark on CPU</div>
+        </div>
+      </div>
+
+      <h3 class="results-subhead reveal">Ablation study — first 200 questions (accuracy)</h3>
+      <div class="results-grid reveal">
+        <div class="result-card">
+          <div class="result-value accent">83.0%</div>
           <div class="result-label">No Mitigation</div>
           <div class="result-sub">Raw LLM baseline</div>
         </div>
         <div class="result-card">
-          <div class="result-value green">93.3%</div>
+          <div class="result-value green">91.5%</div>
           <div class="result-label">RAG Only</div>
-          <div class="result-sub">Best single technique</div>
+          <div class="result-sub">FAISS + Sentence-Transformers</div>
         </div>
         <div class="result-card">
-          <div class="result-value amber">~73%</div>
+          <div class="result-value amber">91.5%</div>
           <div class="result-label">Self-Consistency</div>
-          <div class="result-sub">Majority voting</div>
+          <div class="result-sub">N=5 majority vote</div>
         </div>
         <div class="result-card">
-          <div class="result-value cyan">86.7%</div>
-          <div class="result-label">Full Pipeline</div>
-          <div class="result-sub">Most robust overall</div>
+          <div class="result-value cyan">98.5%</div>
+          <div class="result-label">Full Hybrid Pipeline</div>
+          <div class="result-sub">FAISS + DeBERTa NLI · 100% recall</div>
         </div>
       </div>
 
       <ul class="findings-list reveal">
         <li>
           <span class="icon">🏆</span>
-          <div><strong>RAG is the strongest single technique</strong> — confirms the paper's claims about grounding in retrieval context.</div>
-        </li>
-        <li>
-          <span class="icon">🧩</span>
-          <div><strong>Uncertainty estimation adds robustness</strong> when retrieval context is weak or ambiguous.</div>
+          <div><strong>Retrieval grounding gives the largest single gain</strong> — accuracy rises from 83.0% to 91.5%, confirming the paper's claims about RAG.</div>
         </li>
         <li>
           <span class="icon">🔍</span>
-          <div><strong>NLI entailment reduces false negatives</strong> by cross-checking generation against evidence.</div>
+          <div><strong>Only the hybrid gate detects hallucinations</strong> — single techniques flag nothing, while FAISS + DeBERTa NLI caught every wrong answer in the ablation subset.</div>
         </li>
         <li>
-          <span class="icon">⚡</span>
-          <div><strong>Composite gate outperforms any single technique</strong> on edge cases and adversarial queries.</div>
+          <span class="icon">⚖️</span>
+          <div><strong>High recall trades off precision</strong> — the gate flags many correct answers conservatively; tuning the threshold τ balances the two.</div>
+        </li>
+        <li>
+          <span class="icon">🧪</span>
+          <div><strong>Reproducible by design</strong> — answers come from a simulated LLM (35% hallucination rate), while retrieval and NLI use real production models.</div>
         </li>
       </ul>
     </section>
