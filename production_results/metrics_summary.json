@@ -1,0 +1,80 @@
+{
+  "project": "Demystifying Machine Imagination: Hallucination Control in Large Language Models",
+  "dataset": "TruthfulQA (817 questions)",
+  "evaluation_date": "2026-10-06",
+  "models": {
+    "rag": "sentence-transformers/all-MiniLM-L6-v2 + FAISS IndexFlatIP (384-d)",
+    "nli": "cross-encoder/nli-deberta-v3-base (PyTorch)",
+    "sampling": "Self-Consistency (N=5) with Shannon Entropy"
+  },
+  "overall_metrics": {
+    "total_questions": 817,
+    "correct_answers": 739,
+    "incorrect_answers": 78,
+    "accuracy": 0.9045,
+    "flagged_as_hallucination": 261,
+    "flagged_rate": 0.3195,
+    "true_positives_tp": 59,
+    "false_positives_fp": 202,
+    "false_negatives_fn": 19,
+    "true_negatives_tn": 537,
+    "hallucination_detection_precision": 0.2261,
+    "hallucination_detection_recall": 0.7564,
+    "hallucination_detection_f1": 0.3481,
+    "mean_uncertainty_entropy": 0.4655,
+    "mean_nli_grounding_score": 0.6586,
+    "mean_hallucination_risk_score": 0.4034,
+    "decision_threshold": 0.5,
+    "total_evaluation_time_seconds": 371.1
+  },
+  "ablation_comparison_200_samples": [
+    {
+      "configuration": "No Mitigation (Raw LLM)",
+      "accuracy": 0.830,
+      "f1": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "flagged_rate": 0.0
+    },
+    {
+      "configuration": "RAG Only (TF-IDF)",
+      "accuracy": 0.915,
+      "f1": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "flagged_rate": 0.0
+    },
+    {
+      "configuration": "RAG Only (FAISS + ST)",
+      "accuracy": 0.915,
+      "f1": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "flagged_rate": 0.0
+    },
+    {
+      "configuration": "Self-Consistency Only (N=5)",
+      "accuracy": 0.915,
+      "f1": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "flagged_rate": 0.0
+    },
+    {
+      "configuration": "Hybrid (TF-IDF + Lexical Overlap)",
+      "accuracy": 0.985,
+      "f1": 0.133,
+      "precision": 0.074,
+      "recall": 0.667,
+      "flagged_rate": 0.135
+    },
+    {
+      "configuration": "Hybrid (FAISS + DeBERTa NLI)",
+      "accuracy": 0.985,
+      "f1": 0.111,
+      "precision": 0.059,
+      "recall": 1.000,
+      "flagged_rate": 0.255
+    }
+  ]
+}
