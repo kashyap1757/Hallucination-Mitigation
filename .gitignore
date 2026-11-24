@@ -25,3 +25,6 @@ Desktop.ini
 # Large result files (optional — remove these lines if you want them tracked)
 # results.json
 # results_truthfulqa.json
+
+# Raw benchmark downloads (rebuilt by src/benchmarks.py)
+data/raw/

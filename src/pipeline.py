@@ -22,6 +22,7 @@ Usage:
 
 import argparse
 import json
+import sys
 import math
 import random
 import re
@@ -32,6 +33,9 @@ from pathlib import Path
 from typing import List, Optional, Tuple
 
 import numpy as np
+
+if sys.platform == "win32":  # allow ✓/⚠ output on cp1252 consoles and pipes
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 warnings.filterwarnings("ignore")
 
@@ -345,13 +349,45 @@ class HallucinationResult:
         )
 
 
+def compute_hallucination_score_fixed(uncertainty: float, nli_score: float) -> float:
+    """Original hand-weighted score (kept for comparison): 0.5·U + 0.5·(1 − NLI)."""
+    return 0.5 * uncertainty + 0.5 * (1.0 - nli_score)
+
+
+# Logistic-regression H-score (core model: semantic entropy + NLI gap), fitted on
+# 2100 labelled real-LLM answers by src/run_benchmark_eval.py. The coefficients
+# are read from results/real_llm/hscore_logreg_core.json when present; the
+# values below are the same fit, used as a fallback.
+_HSCORE_FILE = Path(__file__).resolve().parent.parent / "results" / "real_llm" / "hscore_logreg_core.json"
+_HSCORE_DEFAULT = {"intercept": -1.3855,
+                   "coef": {"semantic_entropy": 2.0729, "nli_gap": 0.8712},
+                   "threshold": 0.5212}
+
+
+def _load_hscore_model() -> dict:
+    try:
+        return json.loads(_HSCORE_FILE.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return _HSCORE_DEFAULT
+
+
+HSCORE_MODEL = _load_hscore_model()
+HSCORE_THRESHOLD = float(HSCORE_MODEL["threshold"])
+
+
 def compute_hallucination_score(uncertainty: float, nli_score: float) -> float:
     """
-    Composite hallucination risk score.
-    Combines uncertainty (bad = high) and NLI grounding (bad = low).
-    Weighted equally; weights can be tuned.
+    Logistic-regression hallucination score  (replaces the fixed 0.5/0.5 weights):
+
+        H = σ(β₀ + β₁·U + β₂·(1 − NLI))  =  P(answer is a hallucination)
+
+    U = uncertainty (entropy over samples), NLI = entailment score.
+    Flag when H ≥ HSCORE_THRESHOLD (chosen on the training split).
     """
-    return 0.5 * uncertainty + 0.5 * (1.0 - nli_score)
+    c = HSCORE_MODEL["coef"]
+    z = (HSCORE_MODEL["intercept"] + c["semantic_entropy"] * uncertainty
+         + c["nli_gap"] * (1.0 - nli_score))
+    return 1.0 / (1.0 + math.exp(-z))
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -371,7 +407,7 @@ class HallucinationMitigationPipeline:
         self,
         hallucination_rate: float = 0.35,
         n_samples: int = 5,
-        flag_threshold: float = 0.50,
+        flag_threshold: float = HSCORE_THRESHOLD,
         top_k_retrieval: int = 2,
     ):
         self.llm = SimulatedLLM(hallucination_rate=hallucination_rate)
@@ -519,8 +555,8 @@ def ablation_study():
         ("No mitigation (baseline)",    dict(hallucination_rate=0.35, n_samples=1,  flag_threshold=1.1)),
         ("RAG only",                     dict(hallucination_rate=0.18, n_samples=1,  flag_threshold=1.1)),
         ("Self-consistency only",        dict(hallucination_rate=0.35, n_samples=5,  flag_threshold=1.1)),
-        ("Uncertainty gate only",        dict(hallucination_rate=0.35, n_samples=5,  flag_threshold=0.50)),
-        ("Full hybrid pipeline",         dict(hallucination_rate=0.18, n_samples=5,  flag_threshold=0.50)),
+        ("Uncertainty gate only",        dict(hallucination_rate=0.35, n_samples=5,  flag_threshold=HSCORE_THRESHOLD)),
+        ("Full hybrid pipeline",         dict(hallucination_rate=0.18, n_samples=5,  flag_threshold=HSCORE_THRESHOLD)),
     ]
 
     for name, cfg in configs:
@@ -544,7 +580,7 @@ def main():
     parser.add_argument("--ablation", action="store_true", help="Run ablation study")
     parser.add_argument("--rate", type=float, default=0.35, help="LLM hallucination rate")
     parser.add_argument("--samples", type=int, default=5, help="Self-consistency samples")
-    parser.add_argument("--threshold", type=float, default=0.50, help="Flag threshold")
+    parser.add_argument("--threshold", type=float, default=HSCORE_THRESHOLD, help="Flag threshold (default: fitted logistic H-score threshold)")
     args = parser.parse_args()
 
     pipe = HallucinationMitigationPipeline(

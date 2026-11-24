@@ -43,6 +43,7 @@ from pipeline import (
     compute_entropy_uncertainty,
     nli_entailment_score,
     compute_hallucination_score,
+    HSCORE_THRESHOLD,
     majority_vote,
     evaluate,
 )
@@ -120,14 +121,14 @@ async def startup():
 class QuestionInput(BaseModel):
     question: str = Field(..., description="The question to check for hallucination", example="What is the capital of Australia?")
     n_samples: int = Field(5, ge=1, le=20, description="Number of self-consistency samples")
-    threshold: float = Field(0.50, ge=0.0, le=1.0, description="Hallucination flag threshold")
+    threshold: float = Field(HSCORE_THRESHOLD, ge=0.0, le=1.0, description="Hallucination flag threshold")
     hallucination_rate: float = Field(0.35, ge=0.0, le=1.0, description="Simulated LLM hallucination rate")
 
 
 class BatchInput(BaseModel):
     questions: List[str] = Field(..., description="List of questions to check")
     n_samples: int = Field(5, ge=1, le=20)
-    threshold: float = Field(0.50, ge=0.0, le=1.0)
+    threshold: float = Field(HSCORE_THRESHOLD, ge=0.0, le=1.0)
     hallucination_rate: float = Field(0.35, ge=0.0, le=1.0)
 
 
@@ -196,7 +197,7 @@ def find_matching_sample(question: str) -> Optional[dict]:
     return None
 
 
-def run_question(question: str, n_samples: int = 5, threshold: float = 0.50,
+def run_question(question: str, n_samples: int = 5, threshold: float = HSCORE_THRESHOLD,
                  hallucination_rate: float = 0.35) -> PipelineResponse:
     """Run a single question through the pipeline."""
     start = time.perf_counter()
@@ -552,8 +553,8 @@ async def run_ablation_study(
         ("No Mitigation (Baseline)", dict(hallucination_rate=0.35, n_samples=1, flag_threshold=1.1)),
         ("RAG Only", dict(hallucination_rate=0.18, n_samples=1, flag_threshold=1.1)),
         ("Self-Consistency Only", dict(hallucination_rate=0.35, n_samples=5, flag_threshold=1.1)),
-        ("Uncertainty Gate Only", dict(hallucination_rate=0.35, n_samples=5, flag_threshold=0.50)),
-        ("Full Hybrid Pipeline", dict(hallucination_rate=0.18, n_samples=5, flag_threshold=0.50)),
+        ("Uncertainty Gate Only", dict(hallucination_rate=0.35, n_samples=5, flag_threshold=HSCORE_THRESHOLD)),
+        ("Full Hybrid Pipeline", dict(hallucination_rate=0.18, n_samples=5, flag_threshold=HSCORE_THRESHOLD)),
     ]
 
     results = []

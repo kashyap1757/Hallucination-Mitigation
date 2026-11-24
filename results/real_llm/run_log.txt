@@ -1,0 +1,56 @@
+========================================================================
+  HalluciGuard — REAL LLM + LOGISTIC H-SCORE EVALUATION
+========================================================================
+  Samples : 3000  TruthfulQA=817  HaluEval-QA=728  SciQ=728  SQuAD=727
+  LLM     : meta-llama/Llama-3.2-1B-Instruct   N=5
+
+[1] RAG: MiniLM + FAISS
+W1124 08:12:48.214000 38044 site-packages\torch\distributed\elastic\multiprocessing\redirects.py:29] NOTE: Redirects are currently not supported in Windows or MacOs.
+    2928 passages indexed; gold passage in top-3: 89.1%
+
+[2] Real LLM generation (cached in results/real_llm/)
+  ▶ hybrid         n=5  cached=3000  to-generate=0
+  ▶ cb_greedy      n=1  cached=3000  to-generate=0
+  ▶ rag_greedy     n=1  cached=3000  to-generate=0
+  ▶ cb_sc          n=5  cached=3000  to-generate=0
+
+[3] Semantic entropy + NLI grounding (DeBERTa)
+
+[4] Judging correctness
+    hybrid       accuracy = 64.2%
+    cb_greedy    accuracy = 28.3%
+    rag_greedy   accuracy = 63.2%
+    cb_sc        accuracy = 28.7%
+
+[5] Fitting logistic-regression H-score
+    [core] H = σ(-1.385 + 2.073·U + 0.871·(1-E)),  flag if H ≥ 0.521
+    [full] H = σ(-2.074 + 1.373·U + 0.481·(1-E) + 0.469·C + 1.152·(-l) + 2.008·(1-R)),  flag if H ≥ 0.470
+
+========================================================================
+  HELD-OUT TEST RESULTS  (n=900, hallucination rate 35.8%)
+========================================================================
+  Scorer                         τ   AUROC   AUPRC    Prec     Rec      F1   Flag%  AccPass
+  Fixed 0.5/0.5               0.50   0.702   0.555   51.2%   68.9%   58.7%   48.2%    78.5%
+  Fixed 0.5/0.5 (tuned τ)     0.62   0.702   0.555   51.5%   67.4%   58.4%   46.8%    78.1%
+  LogReg (core)               0.52   0.714   0.560   51.7%   70.2%   59.6%   48.6%    79.3%
+  LogReg (full)               0.47   0.752   0.616   54.2%   70.2%   61.2%   46.3%    80.1%
+
+  5-fold CV AUROC (all samples): Fixed 0.5/0.5=0.699±0.020  LogReg (core)=0.703±0.015  LogReg (full)=0.739±0.018
+
+  Per benchmark (test, LogReg full vs fixed):
+    TruthfulQA   n=245  acc=63.7%  AUROC 0.695→0.706  F1 57.9%→61.4%
+    HaluEval-QA  n=219  acc=62.1%  AUROC 0.691→0.713  F1 56.0%→55.9%
+    SciQ         n=218  acc=71.6%  AUROC 0.714→0.797  F1 55.7%→54.3%
+    SQuAD        n=218  acc=59.6%  AUROC 0.715→0.813  F1 63.6%→69.4%
+
+  Ablation:
+    No mitigation (closed-book, greedy)        acc=28.3%
+    RAG only (greedy)                          acc=63.2%
+    Self-consistency only (N=5)                acc=28.7%
+    RAG + self-consistency (N=5)               acc=64.2%
+    Hybrid + Fixed 0.5/0.5 gate                acc=78.5%  (coverage 51.8%)
+    Hybrid + LogReg (core) gate                acc=79.3%  (coverage 51.4%)
+    Hybrid + LogReg (full) gate                acc=80.1%  (coverage 53.7%)
+
+  Saved metrics → results/real_llm/metrics_summary.json, charts → figures/real_llm/
+  Total time 278s

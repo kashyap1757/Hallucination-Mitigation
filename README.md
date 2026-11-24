@@ -3,7 +3,8 @@
 ![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/API-FastAPI-009688?logo=fastapi&logoColor=white)
 ![Streamlit](https://img.shields.io/badge/Dashboard-Streamlit-FF4B4B?logo=streamlit&logoColor=white)
-![Dataset](https://img.shields.io/badge/Benchmark-TruthfulQA%20(817%20Qs)-6f42c1)
+![Dataset](https://img.shields.io/badge/Benchmarks-3000%20Qs%20(TruthfulQA%20·%20HaluEval%20·%20SciQ%20·%20SQuAD)-6f42c1)
+![LLM](https://img.shields.io/badge/LLM-Llama--3.2--1B--Instruct-0467DF)
 
 > **Mini Project** — 2nd Semester, MIT-ADT University
 > **Paper:** *"Demystifying Machine Imagination: A Comprehensive Review of Hallucination Control in Large Language Models"*
@@ -22,26 +23,60 @@ Query ─► [1. RAG Retrieval] ─► [2. Multi-Sample LLM] ─► [3. Uncertai
 
 ## 🏗️ Architecture
 
-| Stage | Paper Section | Technique | Prototype (`pipeline.py`) | Production (`run_production_test.py`) |
+| Stage | Paper Section | Technique | **Real-LLM evaluation** (`run_benchmark_eval.py`) | Prototype (`pipeline.py`, API, dashboard) |
 |---|---|---|---|---|
-| **1** | §II-A | Retrieval-Augmented Generation | TF-IDF cosine retrieval | `all-MiniLM-L6-v2` embeddings + FAISS `IndexFlatIP` |
-| **2** | §II-C, §II-F | Self-Consistency Sampling | N = 5 samples + majority vote | N = 5 samples + majority vote |
-| **3a** | §II-G | Uncertainty Estimation | Shannon entropy over samples | Shannon entropy over samples |
-| **3b** | §II-F | Post-hoc Verification | Lexical-overlap NLI | `cross-encoder/nli-deberta-v3-base` |
-| **4** | §II-F, Table I | Hallucination Gate | Composite H-score threshold | Composite H-score threshold |
+| **1** | §II-A | Retrieval-Augmented Generation | `all-MiniLM-L6-v2` + FAISS over 2928 passages | TF-IDF cosine retrieval |
+| **2** | §II-C, §II-F | Self-Consistency Sampling | **Llama-3.2-1B-Instruct**, N = 5 samples, largest semantic cluster | `SimulatedLLM`, N = 5 + majority vote |
+| **3a** | §II-G | Uncertainty Estimation | Semantic entropy (bidirectional NLI clustering) + token log-prob | Shannon entropy over strings |
+| **3b** | §II-F | Post-hoc Verification | `cross-encoder/nli-deberta-v3-base` | Lexical-overlap NLI |
+| **4** | §II-F, Table I | Hallucination Gate | **Logistic-regression H-score** (5 features) | Logistic-regression H-score (core, 2 features) |
 
-**Hallucination score**
+**Hallucination score — logistic regression** (learned from 2100 labelled real-LLM answers)
 
 ```
-H_score = 0.5 × Entropy(S₁ … Sₙ) + 0.5 × (1 − NLI_entailment)
-FLAGGED  if  H_score ≥ τ   (default τ = 0.50)
+H = σ(β₀ + β·x) = P(hallucination)
+core:  H = σ(−1.385 + 2.073·U + 0.871·(1−E))                                    flag if H ≥ 0.521
+full:  H = σ(−2.074 + 1.373·U + 0.481·(1−E) + 0.469·C + 1.152·(−ℓ) + 2.008·(1−R))   flag if H ≥ 0.470
 ```
+U = semantic entropy of the samples · E / C = DeBERTa entailment / contradiction · ℓ = LLM mean token log-prob · R = retrieval similarity.
+This replaces the earlier hand-weighted `H = 0.5·U + 0.5·(1−E)` (still available as `compute_hallucination_score_fixed`).
 
-> **Note:** answer generation uses a `SimulatedLLM` with a configurable hallucination rate (default 35%), so experiments are reproducible without GPU or API access. Retrieval and NLI use real models in the production evaluation.
+> **Note:** the main evaluation (`run_benchmark_eval.py`) uses a **real LLM** (Llama-3.2-1B-Instruct, local GPU) that never sees the reference answers. The older prototype scripts, API and dashboard still use `SimulatedLLM` for fast, reproducible demos.
 
 ## 📊 Results
 
-### Production evaluation — full TruthfulQA (817 questions)
+### Real-LLM evaluation — 3000 questions, 4 benchmarks (latest)
+
+Llama-3.2-1B-Instruct · RAG over 2928 passages · N = 5 samples · H-score fitted on 2100, tested on 900 held-out questions.
+
+| Configuration | Accuracy |
+|---|:---:|
+| No mitigation (closed-book) | 28.3% |
+| RAG only | 63.2% |
+| RAG + self-consistency | 64.2% |
+| **+ logistic H-score gate** (answers passed) | **80.1%** (46% flagged) |
+
+| Hallucination detection (test, n = 900) | AUROC | Precision | Recall | F1 |
+|---|:---:|:---:|:---:|:---:|
+| Fixed 0.5/0.5 formula | 0.702 | 51.2% | 68.9% | 58.7% |
+| Logistic — core (same 2 features) | 0.714 | 51.7% | 70.2% | 59.6% |
+| **Logistic — full (5 features)** | **0.752** | **54.2%** | **70.2%** | **61.2%** |
+
+AUROC gain of the full logistic model over the fixed formula: **+0.050 (95% bootstrap CI +0.028 to +0.072)**. Correctness judge agreement with a manual audit: 91.7%.
+
+<p align="center">
+  <img src="figures/real_llm/roc_curves.png" width="45%" alt="ROC curves" />
+  <img src="figures/real_llm/ablation_accuracy.png" width="50%" alt="Ablation" />
+</p>
+
+Full write-up: [`docs/REAL_LLM_AND_LOGISTIC_HSCORE.md`](docs/REAL_LLM_AND_LOGISTIC_HSCORE.md) · Raw metrics: [`results/real_llm/`](results/real_llm/)
+
+### Earlier evaluations (SimulatedLLM)
+
+> These runs pre-date the real LLM and the TruthfulQA answer-parsing fix; kept for reference.
+
+
+#### Production evaluation — full TruthfulQA (817 questions)
 
 | Metric | Value |
 |---|---|
@@ -53,7 +88,7 @@ FLAGGED  if  H_score ≥ τ   (default τ = 0.50)
 | Mean uncertainty / NLI grounding / H-score | 0.466 / 0.659 / 0.403 |
 | Runtime (CPU) | 371 s |
 
-### Ablation study (first 200 questions)
+#### Ablation study (first 200 questions)
 
 | Configuration | Accuracy | Recall | Flag rate |
 |---|:---:|:---:|:---:|
@@ -81,6 +116,11 @@ Full write-up: [`docs/PRODUCTION_MIGRATION_AND_RESULTS.md`](docs/PRODUCTION_MIGR
 ```
 Hallucination-Mitigation/
 ├── src/                          # Source code
+│   ├── run_benchmark_eval.py     # ★ Real-LLM evaluation on 3000 samples + logistic H-score
+│   ├── benchmarks.py             # Builds the 3000-sample multi-benchmark set
+│   ├── real_llm.py               # Local HF LLM backend (Llama-3.2-1B-Instruct by default)
+│   ├── hscore.py                 # Fixed vs. logistic-regression hallucination score
+│   ├── env_compat.py             # Works around a mismatched torchvision install
 │   ├── pipeline.py               # Core 4-stage pipeline (prototype, synthetic + TruthfulQA)
 │   ├── run_real_dataset.py       # Runs the prototype pipeline on the TruthfulQA CSV
 │   ├── run_production_test.py    # Production evaluation (FAISS + DeBERTa NLI)
@@ -89,15 +129,18 @@ Hallucination-Mitigation/
 │   └── api.py                    # FastAPI REST service
 ├── scripts/
 │   ├── inspect_dataset.py        # Quick look at the dataset CSVs
-│   └── show_results.py           # Print a summary of TruthfulQA results
+│   ├── show_results.py           # Print a summary of TruthfulQA results
+│   └── final_checks.py           # Bootstrap CIs + manual judge audit for the real-LLM run
 ├── tests/
 │   └── test_api.py               # Smoke tests against a running API
-├── data/                         # TruthfulQA validation split (generation + multiple choice)
+├── data/                         # TruthfulQA CSVs + benchmark_3000.jsonl (4 benchmarks)
 ├── results/
 │   ├── results.json              # Latest per-question output (read by dashboard / API / evaluate)
 │   ├── results_truthfulqa.json   # Prototype run on TruthfulQA
-│   └── production/               # Production run: full results + metrics summary
+│   ├── production/               # Production run: full results + metrics summary
+│   └── real_llm/                 # Real-LLM run: generations, metrics, fitted H-score models
 ├── figures/
+│   ├── real_llm/                 # Charts from run_benchmark_eval.py
 │   ├── production/               # Charts from run_production_test.py
 │   ├── truthfulqa/               # Charts from run_real_dataset.py
 │   └── evaluation/               # Charts from evaluate.py
@@ -138,7 +181,19 @@ python src/pipeline.py --ablation                        # ablation study
 python src/pipeline.py --rate 0.40 --samples 7 --threshold 0.55
 ```
 
-### Evaluate on TruthfulQA
+### Real-LLM evaluation (3000 samples)
+
+```bash
+python src/benchmarks.py                                 # build data/benchmark_3000.jsonl
+python src/run_benchmark_eval.py                         # ~75 min on an 8 GB GPU (cached afterwards)
+python src/run_benchmark_eval.py --limit 200             # quick check
+python src/run_benchmark_eval.py --llm Qwen/Qwen2.5-1.5B-Instruct   # another model
+python scripts/final_checks.py                           # bootstrap CIs + judge audit
+```
+
+> Requires a CUDA GPU for reasonable speed; the first run downloads the LLM (Llama 3.2 is gated — accept its licence on Hugging Face and `huggingface-cli login`).
+
+### Evaluate on TruthfulQA (SimulatedLLM)
 
 ```bash
 python src/run_real_dataset.py --limit 100               # prototype pipeline
@@ -177,6 +232,7 @@ python tests/test_api.py      # in another terminal, with the API running
 ## 📄 Documentation & Reports
 
 - [System documentation](docs/SYSTEM_DOCUMENTATION.md)
+- [Real LLM, 3000 samples & logistic H-score](docs/REAL_LLM_AND_LOGISTIC_HSCORE.md)
 - [Production migration & results](docs/PRODUCTION_MIGRATION_AND_RESULTS.md)
 - [IEEE conference paper](docs/reports/IEEE_Final_Conference_Paper_Updated.docx)
 - [Project overview](docs/reports/Project_Overview.docx) · [Results & evaluation](docs/reports/Results_and_Evaluation.docx) · [Technical seminar report](docs/reports/Technical%20Seminar%20Report%20Format.docx)
@@ -188,6 +244,9 @@ python tests/test_api.py      # in another terminal, with the API running
 - Wang et al. (2023) — *Self-Consistency Improves Chain of Thought Reasoning in Language Models*
 - He et al. (2021) — *DeBERTa: Decoding-enhanced BERT with Disentangled Attention*
 - Li et al. (2023) — *HaluEval: A Large-Scale Hallucination Evaluation Benchmark*
+- Welbl et al. (2017) — *Crowdsourcing Multiple Choice Science Questions* (SciQ)
+- Rajpurkar et al. (2016) — *SQuAD: 100,000+ Questions for Machine Comprehension of Text*
+- Kuhn et al. (2023) — *Semantic Uncertainty: Linguistic Invariances for Uncertainty Estimation in NLG*
 
 ---
 

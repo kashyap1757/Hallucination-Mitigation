@@ -1,0 +1,397 @@
+{
+  "bootstrap_test": {
+    "n_test": 900,
+    "resamples": 2000,
+    "results": {
+      "Fixed 0.5/0.5": {
+        "auroc_ci95": [
+          0.6673,
+          0.7377
+        ],
+        "f1_ci95": [
+          0.5518,
+          0.6367
+        ]
+      },
+      "LogReg (core)": {
+        "auroc_ci95": [
+          0.6788,
+          0.7476
+        ],
+        "f1_ci95": [
+          0.5512,
+          0.6373
+        ],
+        "auroc_gain_vs_fixed": {
+          "mean": 0.0112,
+          "ci95": [
+            -0.0014,
+            0.0244
+          ],
+          "p_gain_le_0": 0.043
+        },
+        "f1_gain_vs_fixed": {
+          "mean": 0.0008,
+          "ci95": [
+            -0.012,
+            0.0142
+          ],
+          "p_gain_le_0": 0.4555
+        }
+      },
+      "LogReg (full)": {
+        "auroc_ci95": [
+          0.7191,
+          0.785
+        ],
+        "f1_ci95": [
+          0.5678,
+          0.6514
+        ],
+        "auroc_gain_vs_fixed": {
+          "mean": 0.0497,
+          "ci95": [
+            0.0278,
+            0.0717
+          ],
+          "p_gain_le_0": 0.0
+        },
+        "f1_gain_vs_fixed": {
+          "mean": 0.0168,
+          "ci95": [
+            -0.0124,
+            0.0446
+          ],
+          "p_gain_le_0": 0.1315
+        }
+      }
+    }
+  },
+  "judge_audit": {
+    "n": 60,
+    "agree": 55,
+    "false_hallucination": 5,
+    "missed_hallucination": 0,
+    "per_benchmark": {
+      "TruthfulQA": {
+        "n": 15,
+        "agree": 15
+      },
+      "HaluEval-QA": {
+        "n": 15,
+        "agree": 13
+      },
+      "SciQ": {
+        "n": 15,
+        "agree": 14
+      },
+      "SQuAD": {
+        "n": 15,
+        "agree": 13
+      }
+    },
+    "items": [
+      {
+        "id": "truthfulqa-331",
+        "judge_correct": false,
+        "human_correct": false
+      },
+      {
+        "id": "truthfulqa-154",
+        "judge_correct": true,
+        "human_correct": true
+      },
+      {
+        "id": "truthfulqa-404",
+        "judge_correct": false,
+        "human_correct": false
+      },
+      {
+        "id": "truthfulqa-666",
+        "judge_correct": false,
+        "human_correct": false
+      },
+      {
+        "id": "truthfulqa-49",
+        "judge_correct": true,
+        "human_correct": true
+      },
+      {
+        "id": "truthfulqa-74",
+        "judge_correct": false,
+        "human_correct": false
+      },
+      {
+        "id": "truthfulqa-548",
+        "judge_correct": false,
+        "human_correct": false
+      },
+      {
+        "id": "truthfulqa-96",
+        "judge_correct": true,
+        "human_correct": true
+      },
+      {
+        "id": "truthfulqa-374",
+        "judge_correct": true,
+        "human_correct": true
+      },
+      {
+        "id": "truthfulqa-596",
+        "judge_correct": false,
+        "human_correct": false
+      },
+      {
+        "id": "truthfulqa-59",
+        "judge_correct": true,
+        "human_correct": true
+      },
+      {
+        "id": "truthfulqa-519",
+        "judge_correct": false,
+        "human_correct": false
+      },
+      {
+        "id": "truthfulqa-219",
+        "judge_correct": true,
+        "human_correct": true
+      },
+      {
+        "id": "truthfulqa-38",
+        "judge_correct": true,
+        "human_correct": true
+      },
+      {
+        "id": "truthfulqa-88",
+        "judge_correct": true,
+        "human_correct": true
+      },
+      {
+        "id": "halueval-3228",
+        "judge_correct": false,
+        "human_correct": true
+      },
+      {
+        "id": "halueval-7119",
+        "judge_correct": false,
+        "human_correct": false
+      },
+      {
+        "id": "halueval-9980",
+        "judge_correct": true,
+        "human_correct": true
+      },
+      {
+        "id": "halueval-8856",
+        "judge_correct": false,
+        "human_correct": false
+      },
+      {
+        "id": "halueval-3483",
+        "judge_correct": true,
+        "human_correct": true
+      },
+      {
+        "id": "halueval-6883",
+        "judge_correct": false,
+        "human_correct": true
+      },
+      {
+        "id": "halueval-1894",
+        "judge_correct": true,
+        "human_correct": true
+      },
+      {
+        "id": "halueval-1654",
+        "judge_correct": true,
+        "human_correct": true
+      },
+      {
+        "id": "halueval-3613",
+        "judge_correct": false,
+        "human_correct": false
+      },
+      {
+        "id": "halueval-9064",
+        "judge_correct": false,
+        "human_correct": false
+      },
+      {
+        "id": "halueval-6596",
+        "judge_correct": false,
+        "human_correct": false
+      },
+      {
+        "id": "halueval-1245",
+        "judge_correct": true,
+        "human_correct": true
+      },
+      {
+        "id": "halueval-6149",
+        "judge_correct": true,
+        "human_correct": true
+      },
+      {
+        "id": "halueval-1375",
+        "judge_correct": false,
+        "human_correct": false
+      },
+      {
+        "id": "halueval-7428",
+        "judge_correct": true,
+        "human_correct": true
+      },
+      {
+        "id": "sciq-test-102",
+        "judge_correct": true,
+        "human_correct": true
+      },
+      {
+        "id": "sciq-test-206",
+        "judge_correct": true,
+        "human_correct": true
+      },
+      {
+        "id": "sciq-valid-27",
+        "judge_correct": false,
+        "human_correct": false
+      },
+      {
+        "id": "sciq-valid-245",
+        "judge_correct": false,
+        "human_correct": false
+      },
+      {
+        "id": "sciq-test-190",
+        "judge_correct": true,
+        "human_correct": true
+      },
+      {
+        "id": "sciq-test-470",
+        "judge_correct": true,
+        "human_correct": true
+      },
+      {
+        "id": "sciq-valid-303",
+        "judge_correct": true,
+        "human_correct": true
+      },
+      {
+        "id": "sciq-test-442",
+        "judge_correct": true,
+        "human_correct": true
+      },
+      {
+        "id": "sciq-test-340",
+        "judge_correct": true,
+        "human_correct": true
+      },
+      {
+        "id": "sciq-test-329",
+        "judge_correct": false,
+        "human_correct": false
+      },
+      {
+        "id": "sciq-valid-333",
+        "judge_correct": true,
+        "human_correct": true
+      },
+      {
+        "id": "sciq-valid-122",
+        "judge_correct": false,
+        "human_correct": false
+      },
+      {
+        "id": "sciq-test-374",
+        "judge_correct": true,
+        "human_correct": true
+      },
+      {
+        "id": "sciq-valid-126",
+        "judge_correct": false,
+        "human_correct": true
+      },
+      {
+        "id": "sciq-test-847",
+        "judge_correct": true,
+        "human_correct": true
+      },
+      {
+        "id": "squad-5728f2e26aef051400154899",
+        "judge_correct": true,
+        "human_correct": true
+      },
+      {
+        "id": "squad-57287ee3ff5b5019007da275",
+        "judge_correct": false,
+        "human_correct": false
+      },
+      {
+        "id": "squad-5733a32bd058e614000b5f33",
+        "judge_correct": true,
+        "human_correct": true
+      },
+      {
+        "id": "squad-572a1c943f37b319004786e2",
+        "judge_correct": false,
+        "human_correct": false
+      },
+      {
+        "id": "squad-5705f09e75f01819005e77a8",
+        "judge_correct": false,
+        "human_correct": false
+      },
+      {
+        "id": "squad-57106185b654c5140001f8db",
+        "judge_correct": true,
+        "human_correct": true
+      },
+      {
+        "id": "squad-5726651ff1498d1400e8de34",
+        "judge_correct": true,
+        "human_correct": true
+      },
+      {
+        "id": "squad-5725c2a038643c19005acc6c",
+        "judge_correct": true,
+        "human_correct": true
+      },
+      {
+        "id": "squad-5726a784708984140094cd01",
+        "judge_correct": true,
+        "human_correct": true
+      },
+      {
+        "id": "squad-57115c7450c2381900b54a9e",
+        "judge_correct": false,
+        "human_correct": false
+      },
+      {
+        "id": "squad-57274e975951b619008f87fa",
+        "judge_correct": false,
+        "human_correct": true
+      },
+      {
+        "id": "squad-5726d8bd708984140094d35f",
+        "judge_correct": false,
+        "human_correct": false
+      },
+      {
+        "id": "squad-572945b11d04691400779230",
+        "judge_correct": false,
+        "human_correct": true
+      },
+      {
+        "id": "squad-57309a6c2461fd1900a9cf00",
+        "judge_correct": true,
+        "human_correct": true
+      },
+      {
+        "id": "squad-5728fc9e1d04691400778f15",
+        "judge_correct": false,
+        "human_correct": false
+      }
+    ],
+    "agreement": 0.9167
+  }
+}

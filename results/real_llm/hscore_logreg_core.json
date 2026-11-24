@@ -1,0 +1,31 @@
+{
+  "features": [
+    "semantic_entropy",
+    "nli_gap"
+  ],
+  "intercept": -1.385491196798995,
+  "coef": {
+    "semantic_entropy": 2.0729318742695635,
+    "nli_gap": 0.8711887306340544
+  },
+  "threshold": 0.5212,
+  "formula": "H = \u03c3(-1.385 + 2.073\u00b7U + 0.871\u00b7(1-E)),  flag if H \u2265 0.521",
+  "info": {
+    "C": 0.1873817422860383,
+    "standardized_coef": {
+      "semantic_entropy": 0.651512351494768,
+      "nli_gap": 0.3091803841858709
+    },
+    "feature_mean": {
+      "semantic_entropy": 0.29440991517786413,
+      "nli_gap": 0.8130210788477035
+    },
+    "feature_std": {
+      "semantic_entropy": 0.31429511002349786,
+      "nli_gap": 0.3548948388724545
+    },
+    "n_train": 2100,
+    "train_positive_rate": 0.3580952380952381,
+    "threshold_rule": "max F1 on 5-fold out-of-fold training predictions"
+  }
+}

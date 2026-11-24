@@ -1,0 +1,523 @@
+{
+  "metadata": {
+    "llm": "meta-llama/Llama-3.2-1B-Instruct",
+    "n_samples": 5,
+    "embedding_model": "sentence-transformers/all-MiniLM-L6-v2",
+    "nli_model": "cross-encoder/nli-deberta-v3-base",
+    "top_k": 3,
+    "n_total": 3000,
+    "benchmarks": {
+      "TruthfulQA": 817,
+      "HaluEval-QA": 728,
+      "SciQ": 728,
+      "SQuAD": 727
+    },
+    "n_train": 2100,
+    "n_test": 900,
+    "seed": 42,
+    "gold_passage_retrieved_topk": 0.8907,
+    "total_time_seconds": 278.2
+  },
+  "accuracy": {
+    "hybrid": 0.642,
+    "cb_greedy": 0.283,
+    "rag_greedy": 0.6323,
+    "cb_sc": 0.2867
+  },
+  "accuracy_by_benchmark": {
+    "TruthfulQA": 0.6353,
+    "HaluEval-QA": 0.6223,
+    "SciQ": 0.7157,
+    "SQuAD": 0.5956
+  },
+  "hscore_models": {
+    "core": {
+      "features": [
+        "semantic_entropy",
+        "nli_gap"
+      ],
+      "intercept": -1.3855,
+      "coef": {
+        "semantic_entropy": 2.0729,
+        "nli_gap": 0.8712
+      },
+      "threshold": 0.5212,
+      "formula": "H = σ(-1.385 + 2.073·U + 0.871·(1-E)),  flag if H ≥ 0.521",
+      "info": {
+        "C": 0.1874,
+        "standardized_coef": {
+          "semantic_entropy": 0.6515,
+          "nli_gap": 0.3092
+        },
+        "feature_mean": {
+          "semantic_entropy": 0.2944,
+          "nli_gap": 0.813
+        },
+        "feature_std": {
+          "semantic_entropy": 0.3143,
+          "nli_gap": 0.3549
+        },
+        "n_train": 2100,
+        "train_positive_rate": 0.3581,
+        "threshold_rule": "max F1 on 5-fold out-of-fold training predictions"
+      }
+    },
+    "full": {
+      "features": [
+        "semantic_entropy",
+        "nli_gap",
+        "nli_contradiction",
+        "neg_logprob",
+        "retrieval_gap"
+      ],
+      "intercept": -2.0742,
+      "coef": {
+        "semantic_entropy": 1.3734,
+        "nli_gap": 0.4807,
+        "nli_contradiction": 0.4692,
+        "neg_logprob": 1.1521,
+        "retrieval_gap": 2.0077
+      },
+      "threshold": 0.4699,
+      "formula": "H = σ(-2.074 + 1.373·U + 0.481·(1-E) + 0.469·C + 1.152·(-l) + 2.008·(1-R)),  flag if H ≥ 0.470",
+      "info": {
+        "C": 0.0658,
+        "standardized_coef": {
+          "semantic_entropy": 0.4316,
+          "nli_gap": 0.1706,
+          "nli_contradiction": 0.1683,
+          "neg_logprob": 0.396,
+          "retrieval_gap": 0.2971
+        },
+        "feature_mean": {
+          "semantic_entropy": 0.2944,
+          "nli_gap": 0.813,
+          "nli_contradiction": 0.1873,
+          "neg_logprob": 0.3941,
+          "retrieval_gap": 0.3289
+        },
+        "feature_std": {
+          "semantic_entropy": 0.3143,
+          "nli_gap": 0.3549,
+          "nli_contradiction": 0.3587,
+          "neg_logprob": 0.3437,
+          "retrieval_gap": 0.148
+        },
+        "n_train": 2100,
+        "train_positive_rate": 0.3581,
+        "threshold_rule": "max F1 on 5-fold out-of-fold training predictions"
+      }
+    }
+  },
+  "test_metrics": {
+    "Fixed 0.5/0.5": {
+      "n": 900,
+      "threshold": 0.5,
+      "tp": 222,
+      "fp": 212,
+      "fn": 100,
+      "tn": 366,
+      "precision": 0.5115,
+      "recall": 0.6894,
+      "f1": 0.5873,
+      "flag_rate": 0.4822,
+      "auroc": 0.7021,
+      "auprc": 0.5549,
+      "accuracy_all": 0.6422,
+      "accuracy_passed": 0.7854,
+      "coverage": 0.5178
+    },
+    "Fixed 0.5/0.5 (tuned τ)": {
+      "n": 900,
+      "threshold": 0.6229,
+      "tp": 217,
+      "fp": 204,
+      "fn": 105,
+      "tn": 374,
+      "precision": 0.5154,
+      "recall": 0.6739,
+      "f1": 0.5841,
+      "flag_rate": 0.4678,
+      "auroc": 0.7021,
+      "auprc": 0.5549,
+      "accuracy_all": 0.6422,
+      "accuracy_passed": 0.7808,
+      "coverage": 0.5322
+    },
+    "LogReg (core)": {
+      "n": 900,
+      "threshold": 0.5212,
+      "tp": 226,
+      "fp": 211,
+      "fn": 96,
+      "tn": 367,
+      "precision": 0.5172,
+      "recall": 0.7019,
+      "f1": 0.5955,
+      "flag_rate": 0.4856,
+      "auroc": 0.7136,
+      "auprc": 0.5603,
+      "accuracy_all": 0.6422,
+      "accuracy_passed": 0.7927,
+      "coverage": 0.5144
+    },
+    "LogReg (full)": {
+      "n": 900,
+      "threshold": 0.4699,
+      "tp": 226,
+      "fp": 191,
+      "fn": 96,
+      "tn": 387,
+      "precision": 0.542,
+      "recall": 0.7019,
+      "f1": 0.6116,
+      "flag_rate": 0.4633,
+      "auroc": 0.7519,
+      "auprc": 0.6155,
+      "accuracy_all": 0.6422,
+      "accuracy_passed": 0.8012,
+      "coverage": 0.5367
+    }
+  },
+  "cv_auroc": {
+    "Fixed 0.5/0.5": {
+      "mean": 0.699,
+      "std": 0.02
+    },
+    "LogReg (core)": {
+      "mean": 0.7032,
+      "std": 0.0149
+    },
+    "LogReg (full)": {
+      "mean": 0.739,
+      "std": 0.0184
+    }
+  },
+  "per_benchmark_test": {
+    "TruthfulQA": {
+      "Fixed 0.5/0.5": {
+        "n": 245,
+        "threshold": 0.5,
+        "tp": 64,
+        "fp": 68,
+        "fn": 25,
+        "tn": 88,
+        "precision": 0.4848,
+        "recall": 0.7191,
+        "f1": 0.5792,
+        "flag_rate": 0.5388,
+        "auroc": 0.6945,
+        "auprc": 0.52,
+        "accuracy_all": 0.6367,
+        "accuracy_passed": 0.7788,
+        "coverage": 0.4612
+      },
+      "Fixed 0.5/0.5 (tuned τ)": {
+        "n": 245,
+        "threshold": 0.6229,
+        "tp": 63,
+        "fp": 66,
+        "fn": 26,
+        "tn": 90,
+        "precision": 0.4884,
+        "recall": 0.7079,
+        "f1": 0.578,
+        "flag_rate": 0.5265,
+        "auroc": 0.6945,
+        "auprc": 0.52,
+        "accuracy_all": 0.6367,
+        "accuracy_passed": 0.7759,
+        "coverage": 0.4735
+      },
+      "LogReg (core)": {
+        "n": 245,
+        "threshold": 0.5212,
+        "tp": 66,
+        "fp": 70,
+        "fn": 23,
+        "tn": 86,
+        "precision": 0.4853,
+        "recall": 0.7416,
+        "f1": 0.5867,
+        "flag_rate": 0.5551,
+        "auroc": 0.6864,
+        "auprc": 0.5147,
+        "accuracy_all": 0.6367,
+        "accuracy_passed": 0.789,
+        "coverage": 0.4449
+      },
+      "LogReg (full)": {
+        "n": 245,
+        "threshold": 0.4699,
+        "tp": 66,
+        "fp": 60,
+        "fn": 23,
+        "tn": 96,
+        "precision": 0.5238,
+        "recall": 0.7416,
+        "f1": 0.614,
+        "flag_rate": 0.5143,
+        "auroc": 0.7058,
+        "auprc": 0.5341,
+        "accuracy_all": 0.6367,
+        "accuracy_passed": 0.8067,
+        "coverage": 0.4857
+      }
+    },
+    "HaluEval-QA": {
+      "Fixed 0.5/0.5": {
+        "n": 219,
+        "threshold": 0.5,
+        "tp": 49,
+        "fp": 43,
+        "fn": 34,
+        "tn": 93,
+        "precision": 0.5326,
+        "recall": 0.5904,
+        "f1": 0.56,
+        "flag_rate": 0.4201,
+        "auroc": 0.6907,
+        "auprc": 0.5966,
+        "accuracy_all": 0.621,
+        "accuracy_passed": 0.7323,
+        "coverage": 0.5799
+      },
+      "Fixed 0.5/0.5 (tuned τ)": {
+        "n": 219,
+        "threshold": 0.6229,
+        "tp": 46,
+        "fp": 40,
+        "fn": 37,
+        "tn": 96,
+        "precision": 0.5349,
+        "recall": 0.5542,
+        "f1": 0.5444,
+        "flag_rate": 0.3927,
+        "auroc": 0.6907,
+        "auprc": 0.5966,
+        "accuracy_all": 0.621,
+        "accuracy_passed": 0.7218,
+        "coverage": 0.6073
+      },
+      "LogReg (core)": {
+        "n": 219,
+        "threshold": 0.5212,
+        "tp": 49,
+        "fp": 42,
+        "fn": 34,
+        "tn": 94,
+        "precision": 0.5385,
+        "recall": 0.5904,
+        "f1": 0.5632,
+        "flag_rate": 0.4155,
+        "auroc": 0.6946,
+        "auprc": 0.5979,
+        "accuracy_all": 0.621,
+        "accuracy_passed": 0.7344,
+        "coverage": 0.5845
+      },
+      "LogReg (full)": {
+        "n": 219,
+        "threshold": 0.4699,
+        "tp": 50,
+        "fp": 46,
+        "fn": 33,
+        "tn": 90,
+        "precision": 0.5208,
+        "recall": 0.6024,
+        "f1": 0.5587,
+        "flag_rate": 0.4384,
+        "auroc": 0.7134,
+        "auprc": 0.6176,
+        "accuracy_all": 0.621,
+        "accuracy_passed": 0.7317,
+        "coverage": 0.5616
+      }
+    },
+    "SciQ": {
+      "Fixed 0.5/0.5": {
+        "n": 218,
+        "threshold": 0.5,
+        "tp": 39,
+        "fp": 39,
+        "fn": 23,
+        "tn": 117,
+        "precision": 0.5,
+        "recall": 0.629,
+        "f1": 0.5571,
+        "flag_rate": 0.3578,
+        "auroc": 0.7136,
+        "auprc": 0.5744,
+        "accuracy_all": 0.7156,
+        "accuracy_passed": 0.8357,
+        "coverage": 0.6422
+      },
+      "Fixed 0.5/0.5 (tuned τ)": {
+        "n": 218,
+        "threshold": 0.6229,
+        "tp": 39,
+        "fp": 38,
+        "fn": 23,
+        "tn": 118,
+        "precision": 0.5065,
+        "recall": 0.629,
+        "f1": 0.5612,
+        "flag_rate": 0.3532,
+        "auroc": 0.7136,
+        "auprc": 0.5744,
+        "accuracy_all": 0.7156,
+        "accuracy_passed": 0.8369,
+        "coverage": 0.6468
+      },
+      "LogReg (core)": {
+        "n": 218,
+        "threshold": 0.5212,
+        "tp": 39,
+        "fp": 39,
+        "fn": 23,
+        "tn": 117,
+        "precision": 0.5,
+        "recall": 0.629,
+        "f1": 0.5571,
+        "flag_rate": 0.3578,
+        "auroc": 0.7379,
+        "auprc": 0.5806,
+        "accuracy_all": 0.7156,
+        "accuracy_passed": 0.8357,
+        "coverage": 0.6422
+      },
+      "LogReg (full)": {
+        "n": 218,
+        "threshold": 0.4699,
+        "tp": 35,
+        "fp": 32,
+        "fn": 27,
+        "tn": 124,
+        "precision": 0.5224,
+        "recall": 0.5645,
+        "f1": 0.5426,
+        "flag_rate": 0.3073,
+        "auroc": 0.7968,
+        "auprc": 0.6152,
+        "accuracy_all": 0.7156,
+        "accuracy_passed": 0.8212,
+        "coverage": 0.6927
+      }
+    },
+    "SQuAD": {
+      "Fixed 0.5/0.5": {
+        "n": 218,
+        "threshold": 0.5,
+        "tp": 70,
+        "fp": 62,
+        "fn": 18,
+        "tn": 68,
+        "precision": 0.5303,
+        "recall": 0.7955,
+        "f1": 0.6364,
+        "flag_rate": 0.6055,
+        "auroc": 0.7149,
+        "auprc": 0.6284,
+        "accuracy_all": 0.5963,
+        "accuracy_passed": 0.7907,
+        "coverage": 0.3945
+      },
+      "Fixed 0.5/0.5 (tuned τ)": {
+        "n": 218,
+        "threshold": 0.6229,
+        "tp": 69,
+        "fp": 60,
+        "fn": 19,
+        "tn": 70,
+        "precision": 0.5349,
+        "recall": 0.7841,
+        "f1": 0.6359,
+        "flag_rate": 0.5917,
+        "auroc": 0.7149,
+        "auprc": 0.6284,
+        "accuracy_all": 0.5963,
+        "accuracy_passed": 0.7865,
+        "coverage": 0.4083
+      },
+      "LogReg (core)": {
+        "n": 218,
+        "threshold": 0.5212,
+        "tp": 72,
+        "fp": 60,
+        "fn": 16,
+        "tn": 70,
+        "precision": 0.5455,
+        "recall": 0.8182,
+        "f1": 0.6545,
+        "flag_rate": 0.6055,
+        "auroc": 0.7396,
+        "auprc": 0.6412,
+        "accuracy_all": 0.5963,
+        "accuracy_passed": 0.814,
+        "coverage": 0.3945
+      },
+      "LogReg (full)": {
+        "n": 218,
+        "threshold": 0.4699,
+        "tp": 75,
+        "fp": 53,
+        "fn": 13,
+        "tn": 77,
+        "precision": 0.5859,
+        "recall": 0.8523,
+        "f1": 0.6944,
+        "flag_rate": 0.5872,
+        "auroc": 0.8129,
+        "auprc": 0.7649,
+        "accuracy_all": 0.5963,
+        "accuracy_passed": 0.8556,
+        "coverage": 0.4128
+      }
+    }
+  },
+  "ablation": [
+    {
+      "config": "No mitigation (closed-book, greedy)",
+      "accuracy": 0.283
+    },
+    {
+      "config": "RAG only (greedy)",
+      "accuracy": 0.6323
+    },
+    {
+      "config": "Self-consistency only (N=5)",
+      "accuracy": 0.2867
+    },
+    {
+      "config": "RAG + self-consistency (N=5)",
+      "accuracy": 0.642
+    },
+    {
+      "config": "Hybrid + Fixed 0.5/0.5 gate",
+      "accuracy": 0.7854,
+      "coverage": 0.5178,
+      "f1": 0.5873,
+      "recall": 0.6894,
+      "precision": 0.5115,
+      "evaluated_on": "test split"
+    },
+    {
+      "config": "Hybrid + LogReg (core) gate",
+      "accuracy": 0.7927,
+      "coverage": 0.5144,
+      "f1": 0.5955,
+      "recall": 0.7019,
+      "precision": 0.5172,
+      "evaluated_on": "test split"
+    },
+    {
+      "config": "Hybrid + LogReg (full) gate",
+      "accuracy": 0.8012,
+      "coverage": 0.5367,
+      "f1": 0.6116,
+      "recall": 0.7019,
+      "precision": 0.542,
+      "evaluated_on": "test split"
+    }
+  ]
+}

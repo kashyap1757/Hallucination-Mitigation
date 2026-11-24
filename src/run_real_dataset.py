@@ -12,6 +12,8 @@ Usage:
 
 import argparse
 import ast
+import io
+import tokenize
 import csv
 import json
 import re
@@ -34,6 +36,7 @@ from pipeline import (
     compute_entropy_uncertainty,
     nli_entailment_score,
     compute_hallucination_score,
+    HSCORE_THRESHOLD,
     majority_vote,
     evaluate,
     print_report,
@@ -47,28 +50,19 @@ def parse_array_field(text: str) -> list:
     """
     if not text or text.strip() == "":
         return []
-    
     text = text.strip()
-    
-    # Try standard Python list parsing first
+    # TruthfulQA stores numpy-style arrays: ['a' 'b' "c's"] (no commas).
+    # ast.literal_eval would silently CONCATENATE adjacent string literals,
+    # so tokenize and decode each string literal individually instead.
     try:
-        result = ast.literal_eval(text)
-        if isinstance(result, list):
-            return [str(x).strip() for x in result]
-    except (ValueError, SyntaxError):
+        toks = tokenize.generate_tokens(io.StringIO(text).readline)
+        items = [str(ast.literal_eval(t.string)).strip()
+                 for t in toks if t.type == tokenize.STRING]
+        if items:
+            return items
+    except (tokenize.TokenError, ValueError, SyntaxError):
         pass
-    
-    # Handle numpy-style arrays: ['item1' 'item2'] (space-separated, no commas)
-    if text.startswith("[") and text.endswith("]"):
-        inner = text[1:-1].strip()
-        # Match quoted strings (single or double)
-        matches = re.findall(r"'([^']*)'|\"([^\"]*)\"", inner)
-        result = [m[0] if m[0] else m[1] for m in matches]
-        if result:
-            return result
-    
-    # Fallback: treat as single item
-    return [text.strip()]
+    return [text]
 
 
 def load_truthfulqa_csv(csv_path: str, limit: int = None) -> list:
@@ -283,7 +277,7 @@ def generate_charts(results, metrics, output_dir):
     bins = np.linspace(0, 1, 20)
     axes[1].hist(correct_scores, bins=bins, alpha=0.7, label="Correct", color="#4caf7d", edgecolor="white")
     axes[1].hist(wrong_scores, bins=bins, alpha=0.7, label="Wrong", color="#e05252", edgecolor="white")
-    axes[1].axvline(0.50, color="#333", linestyle="--", linewidth=1.5, label="Threshold (0.50)")
+    axes[1].axvline(HSCORE_THRESHOLD, color="#333", linestyle="--", linewidth=1.5, label=f"Threshold ({HSCORE_THRESHOLD:.2f})")
     axes[1].set_xlabel("Hallucination Score")
     axes[1].set_ylabel("Frequency")
     axes[1].set_title("H-Score Distribution by Correctness", fontweight="bold")
@@ -362,7 +356,7 @@ def main():
     parser.add_argument("--ablation", action="store_true", help="Run ablation study")
     parser.add_argument("--rate", type=float, default=0.35, help="LLM hallucination rate")
     parser.add_argument("--samples", type=int, default=5, help="Self-consistency samples")
-    parser.add_argument("--threshold", type=float, default=0.50, help="Flag threshold")
+    parser.add_argument("--threshold", type=float, default=HSCORE_THRESHOLD, help="Flag threshold (default: fitted logistic H-score threshold)")
     args = parser.parse_args()
     
     csv_path = ROOT_DIR / "data" / "generation_validation.csv"

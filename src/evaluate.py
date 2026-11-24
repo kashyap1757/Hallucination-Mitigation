@@ -10,6 +10,9 @@ import json
 import sys
 from pathlib import Path
 
+if sys.platform == "win32":  # allow ✓/⚠ output on cp1252 consoles and pipes
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+
 # ── Try to import plotting libraries ─────────────────────────────────────────
 try:
     import matplotlib
@@ -30,7 +33,7 @@ FIGURES_DIR = ROOT_DIR / "figures" / "evaluation"
 def load_results(path=None):
     if path is None:
         path = RESULTS_PATH
-    with open(path) as f:
+    with open(path, encoding="utf-8") as f:
         return json.load(f)
 
 
@@ -104,7 +107,10 @@ def score_distribution(results):
     bins = np.linspace(0, 1, 12)
     ax.hist(correct_scores, bins=bins, alpha=0.75, label="Correct answers", color="#4caf7d", edgecolor="white")
     ax.hist(wrong_scores,   bins=bins, alpha=0.75, label="Wrong answers",   color="#e05252", edgecolor="white")
-    ax.axvline(0.50, color="#333", linestyle="--", linewidth=1.5, label="Flag threshold (0.50)")
+    # gate threshold = lowest score that was flagged (logistic H-score threshold)
+    flagged_scores = [r["hallucination_score"] for r in results if r["flagged"]]
+    tau = min(flagged_scores) if flagged_scores else 0.50
+    ax.axvline(tau, color="#333", linestyle="--", linewidth=1.5, label=f"Flag threshold ({tau:.2f})")
     ax.set_xlabel("Hallucination Score", fontsize=12)
     ax.set_ylabel("Frequency", fontsize=12)
     ax.set_title("Hallucination Score Distribution by Correctness", fontsize=14, fontweight="bold", pad=15)

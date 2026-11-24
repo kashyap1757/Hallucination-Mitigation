@@ -131,6 +131,7 @@ from pipeline import (
     compute_entropy_uncertainty,
     nli_entailment_score,
     compute_hallucination_score,
+    HSCORE_THRESHOLD,
     majority_vote,
 )
 from run_real_dataset import load_truthfulqa_csv
@@ -220,7 +221,7 @@ with st.sidebar:
 
     flag_threshold = st.slider(
         "🚨 Flag Threshold",
-        min_value=0.0, max_value=1.0, value=0.50, step=0.05,
+        min_value=0.0, max_value=1.0, value=round(HSCORE_THRESHOLD, 2), step=0.01,
         help="Hallucination score ≥ threshold → FLAGGED"
     )
 
@@ -486,8 +487,8 @@ with tab3:
         ("No Mitigation (Baseline)", dict(hallucination_rate=0.35, n_samples=1, flag_threshold=1.1)),
         ("RAG Only", dict(hallucination_rate=0.18, n_samples=1, flag_threshold=1.1)),
         ("Self-Consistency Only", dict(hallucination_rate=0.35, n_samples=5, flag_threshold=1.1)),
-        ("Uncertainty Gate Only", dict(hallucination_rate=0.35, n_samples=5, flag_threshold=0.50)),
-        ("Full Hybrid Pipeline", dict(hallucination_rate=0.18, n_samples=5, flag_threshold=0.50)),
+        ("Uncertainty Gate Only", dict(hallucination_rate=0.35, n_samples=5, flag_threshold=HSCORE_THRESHOLD)),
+        ("Full Hybrid Pipeline", dict(hallucination_rate=0.18, n_samples=5, flag_threshold=HSCORE_THRESHOLD)),
     ]
 
     # Use a subset of real dataset for ablation (for speed)

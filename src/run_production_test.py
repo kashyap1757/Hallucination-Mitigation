@@ -16,6 +16,8 @@ Usage:
 
 import argparse
 import ast
+import io
+import tokenize
 import csv
 import json
 import math
@@ -50,19 +52,18 @@ def parse_array_field(text: str) -> list:
     if not text or text.strip() == "":
         return []
     text = text.strip()
+    # TruthfulQA stores numpy-style arrays: ['a' 'b' "c's"] (no commas).
+    # ast.literal_eval would silently CONCATENATE adjacent string literals,
+    # so tokenize and decode each string literal individually instead.
     try:
-        result = ast.literal_eval(text)
-        if isinstance(result, list):
-            return [str(x).strip() for x in result]
-    except (ValueError, SyntaxError):
+        toks = tokenize.generate_tokens(io.StringIO(text).readline)
+        items = [str(ast.literal_eval(t.string)).strip()
+                 for t in toks if t.type == tokenize.STRING]
+        if items:
+            return items
+    except (tokenize.TokenError, ValueError, SyntaxError):
         pass
-    if text.startswith("[") and text.endswith("]"):
-        inner = text[1:-1].strip()
-        matches = re.findall(r"'([^']*)'|\"([^\"]*)\"", inner)
-        result = [m[0] if m[0] else m[1] for m in matches]
-        if result:
-            return result
-    return [text.strip()]
+    return [text]
 
 
 def load_truthfulqa_csv(csv_path: str, limit: int = None) -> list:
@@ -296,9 +297,9 @@ class HallucinationResult:
     details: dict = field(default_factory=dict)
 
 
-def compute_hallucination_score(uncertainty: float, nli_score: float) -> float:
-    """H_score = 0.5 × Entropy + 0.5 × (1 - NLI_entailment)"""
-    return 0.5 * uncertainty + 0.5 * (1.0 - nli_score)
+# H-score: logistic regression (shared with pipeline.py; see src/hscore.py)
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from pipeline import compute_hallucination_score, HSCORE_THRESHOLD  # noqa: E402
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -319,7 +320,7 @@ class ProductionPipeline:
         dataset: list,
         hallucination_rate: float = 0.35,
         n_samples: int = 5,
-        flag_threshold: float = 0.50,
+        flag_threshold: float = HSCORE_THRESHOLD,
         top_k_retrieval: int = 3,
         use_production_rag: bool = True,
         use_production_nli: bool = True,
@@ -555,7 +556,7 @@ def generate_all_charts(results, metrics, cat_metrics, ablation_data, output_dir
             color="#4caf7d", edgecolor="white")
     ax.hist(wrong_scores, bins=bins, alpha=0.75, label=f"Wrong (n={len(wrong_scores)})",
             color="#e05252", edgecolor="white")
-    ax.axvline(0.50, color="#333", linestyle="--", linewidth=2, label="Threshold (0.50)")
+    ax.axvline(HSCORE_THRESHOLD, color="#333", linestyle="--", linewidth=2, label=f"Threshold ({HSCORE_THRESHOLD:.2f})")
     ax.set_xlabel("Hallucination Score (H-Score)")
     ax.set_ylabel("Frequency")
     ax.set_title("H-Score Distribution by Correctness (Production Models)", fontweight="bold", pad=15)
@@ -683,7 +684,7 @@ def main():
     parser.add_argument("--ablation", action="store_true", help="Run ablation study")
     parser.add_argument("--rate", type=float, default=0.35, help="LLM hallucination rate")
     parser.add_argument("--samples", type=int, default=5, help="Self-consistency samples")
-    parser.add_argument("--threshold", type=float, default=0.50, help="Flag threshold")
+    parser.add_argument("--threshold", type=float, default=HSCORE_THRESHOLD, help="Flag threshold (default: fitted logistic H-score threshold)")
     args = parser.parse_args()
 
     csv_path = ROOT_DIR / "data" / "generation_validation.csv"
@@ -800,9 +801,9 @@ def main():
                                              use_production_rag=True,  use_production_nli=False)),
             ("Self-Consistency (N=5)",  dict(hallucination_rate=0.35, n_samples=5,  flag_threshold=1.1,
                                              use_production_rag=False, use_production_nli=False)),
-            ("Hybrid (TF-IDF + Lex)",   dict(hallucination_rate=0.18, n_samples=5,  flag_threshold=0.50,
+            ("Hybrid (TF-IDF + Lex)",   dict(hallucination_rate=0.18, n_samples=5,  flag_threshold=HSCORE_THRESHOLD,
                                              use_production_rag=False, use_production_nli=False)),
-            ("Hybrid (FAISS + DeBERTa)",dict(hallucination_rate=0.18, n_samples=5,  flag_threshold=0.50,
+            ("Hybrid (FAISS + DeBERTa)",dict(hallucination_rate=0.18, n_samples=5,  flag_threshold=HSCORE_THRESHOLD,
                                              use_production_rag=True,  use_production_nli=True)),
         ]
 

@@ -249,6 +249,11 @@ NLI = |{"false"} ∩ context| / |{"false"}| = 0 / 1 = 0.0
 
 ### Formula
 
+> **Updated:** the gate now uses a **logistic-regression H-score**
+> `H = σ(−1.385 + 2.073·U + 0.871·(1 − NLI))`, flag if `H ≥ 0.521`
+> (5-feature variant and full results: [REAL_LLM_AND_LOGISTIC_HSCORE.md](REAL_LLM_AND_LOGISTIC_HSCORE.md)).
+> The original fixed-weight formula below is kept as `compute_hallucination_score_fixed`.
+
 ```
 H_score = 0.5 × Uncertainty + 0.5 × (1 - NLI_score)
 ```

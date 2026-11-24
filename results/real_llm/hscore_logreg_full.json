@@ -1,0 +1,46 @@
+{
+  "features": [
+    "semantic_entropy",
+    "nli_gap",
+    "nli_contradiction",
+    "neg_logprob",
+    "retrieval_gap"
+  ],
+  "intercept": -2.074244929996343,
+  "coef": {
+    "semantic_entropy": 1.3733809025018635,
+    "nli_gap": 0.48070979384780504,
+    "nli_contradiction": 0.46917157258520564,
+    "neg_logprob": 1.152136505574531,
+    "retrieval_gap": 2.00773480103631
+  },
+  "threshold": 0.4699,
+  "formula": "H = \u03c3(-2.074 + 1.373\u00b7U + 0.481\u00b7(1-E) + 0.469\u00b7C + 1.152\u00b7(-l) + 2.008\u00b7(1-R)),  flag if H \u2265 0.470",
+  "info": {
+    "C": 0.0657933224657568,
+    "standardized_coef": {
+      "semantic_entropy": 0.43164690185599397,
+      "nli_gap": 0.1706014248320276,
+      "nli_contradiction": 0.16830353156085714,
+      "neg_logprob": 0.3959571400967988,
+      "retrieval_gap": 0.29711748592583553
+    },
+    "feature_mean": {
+      "semantic_entropy": 0.29440991517786413,
+      "nli_gap": 0.8130210788477035,
+      "nli_contradiction": 0.18728396592922006,
+      "neg_logprob": 0.39406969604392844,
+      "retrieval_gap": 0.3288848053131785
+    },
+    "feature_std": {
+      "semantic_entropy": 0.31429511002349786,
+      "nli_gap": 0.3548948388724545,
+      "nli_contradiction": 0.3587249130067269,
+      "neg_logprob": 0.3436720719992711,
+      "retrieval_gap": 0.14798642020473807
+    },
+    "n_train": 2100,
+    "train_positive_rate": 0.3580952380952381,
+    "threshold_rule": "max F1 on 5-fold out-of-fold training predictions"
+  }
+}

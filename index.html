@@ -693,10 +693,11 @@
       </div>
 
       <div class="equation-box reveal">
-        <div class="eq-label">Hallucination Score — Composite Gate</div>
+        <div class="eq-label">Hallucination Score — Logistic Regression Gate</div>
         <div class="eq-formula">
-          <span class="eq-highlight-3">H_score</span> = 0.5 × <span class="eq-highlight">Entropy(S₁...Sₙ)</span> + 0.5 × (1 − <span class="eq-highlight-2">NLI_entailment</span>)<br />
-          If <span class="eq-highlight-3">H_score</span> ≥ threshold → ⚠️ <span style="color: var(--red);">FLAGGED</span>
+          <span class="eq-highlight-3">H</span> = σ(−2.074 + 1.373·<span class="eq-highlight">U</span> + 0.481·(1 − <span class="eq-highlight-2">E</span>) + 0.469·<span class="eq-highlight-2">C</span> + 1.152·(−ℓ) + 2.008·(1 − R)) = P(hallucination)<br />
+          If <span class="eq-highlight-3">H</span> ≥ 0.47 → ⚠️ <span style="color: var(--red);">FLAGGED</span><br />
+          <span style="font-size: 0.8em; opacity: 0.75;">U semantic entropy · E/C NLI entailment/contradiction · ℓ LLM log-prob · R retrieval similarity — learned on 2100 real-LLM answers (replaces 0.5·U + 0.5·(1 − E))</span>
         </div>
       </div>
     </section>
@@ -705,74 +706,74 @@
     <section id="results">
       <div class="reveal">
         <div class="section-label">📊 Results</div>
-        <h2 class="section-title">Evaluation on TruthfulQA</h2>
-        <p class="section-desc">Production evaluation with FAISS + Sentence-Transformers retrieval and DeBERTa-v3 NLI on the full 817-question TruthfulQA benchmark.</p>
+        <h2 class="section-title">Real LLM · 3000 Questions · 4 Benchmarks</h2>
+        <p class="section-desc">Llama-3.2-1B-Instruct answers TruthfulQA, HaluEval-QA, SciQ and SQuAD questions with FAISS retrieval, 5 samples, DeBERTa-v3 NLI and a logistic-regression gate evaluated on 900 held-out questions.</p>
       </div>
 
-      <h3 class="results-subhead reveal">Full benchmark — 817 questions</h3>
+      <h3 class="results-subhead reveal">Ablation — answer accuracy (3000 questions)</h3>
       <div class="results-grid reveal">
         <div class="result-card">
-          <div class="result-value green">90.45%</div>
-          <div class="result-label">Answer Accuracy</div>
-          <div class="result-sub">739 of 817 correct</div>
-        </div>
-        <div class="result-card">
-          <div class="result-value cyan">75.6%</div>
-          <div class="result-label">Detection Recall</div>
-          <div class="result-sub">Caught 59 of 78 wrong answers</div>
-        </div>
-        <div class="result-card">
-          <div class="result-value amber">31.95%</div>
-          <div class="result-label">Gate Flag Rate</div>
-          <div class="result-sub">Precision 22.6% · F1 34.8%</div>
-        </div>
-        <div class="result-card">
-          <div class="result-value accent">371 s</div>
-          <div class="result-label">Runtime</div>
-          <div class="result-sub">Full benchmark on CPU</div>
-        </div>
-      </div>
-
-      <h3 class="results-subhead reveal">Ablation study — first 200 questions (accuracy)</h3>
-      <div class="results-grid reveal">
-        <div class="result-card">
-          <div class="result-value accent">83.0%</div>
+          <div class="result-value accent">28.3%</div>
           <div class="result-label">No Mitigation</div>
-          <div class="result-sub">Raw LLM baseline</div>
+          <div class="result-sub">Closed-book Llama-3.2-1B</div>
         </div>
         <div class="result-card">
-          <div class="result-value green">91.5%</div>
+          <div class="result-value green">63.2%</div>
           <div class="result-label">RAG Only</div>
-          <div class="result-sub">FAISS + Sentence-Transformers</div>
+          <div class="result-sub">FAISS + MiniLM retrieval</div>
         </div>
         <div class="result-card">
-          <div class="result-value amber">91.5%</div>
-          <div class="result-label">Self-Consistency</div>
-          <div class="result-sub">N=5 majority vote</div>
+          <div class="result-value amber">64.2%</div>
+          <div class="result-label">RAG + Self-Consistency</div>
+          <div class="result-sub">N = 5, semantic clustering</div>
         </div>
         <div class="result-card">
-          <div class="result-value cyan">98.5%</div>
-          <div class="result-label">Full Hybrid Pipeline</div>
-          <div class="result-sub">FAISS + DeBERTa NLI · 100% recall</div>
+          <div class="result-value cyan">80.1%</div>
+          <div class="result-label">+ Logistic Gate</div>
+          <div class="result-sub">Accuracy of answers passed · 46% flagged</div>
+        </div>
+      </div>
+
+      <h3 class="results-subhead reveal">Hallucination detection — held-out test (900 questions)</h3>
+      <div class="results-grid reveal">
+        <div class="result-card">
+          <div class="result-value accent">0.702</div>
+          <div class="result-label">AUROC — Fixed 0.5/0.5</div>
+          <div class="result-sub">Original formula · F1 58.7%</div>
+        </div>
+        <div class="result-card">
+          <div class="result-value cyan">0.752</div>
+          <div class="result-label">AUROC — Logistic H-score</div>
+          <div class="result-sub">5 features · F1 61.2% · recall 70.2%</div>
+        </div>
+        <div class="result-card">
+          <div class="result-value green">+0.050</div>
+          <div class="result-label">AUROC Gain</div>
+          <div class="result-sub">95% bootstrap CI +0.028 to +0.072</div>
+        </div>
+        <div class="result-card">
+          <div class="result-value amber">91.7%</div>
+          <div class="result-label">Judge Agreement</div>
+          <div class="result-sub">Manual audit of 60 answers</div>
         </div>
       </div>
 
       <ul class="findings-list reveal">
         <li>
           <span class="icon">🏆</span>
-          <div><strong>Retrieval grounding gives the largest single gain</strong> — accuracy rises from 83.0% to 91.5%, confirming the paper's claims about RAG.</div>
+          <div><strong>Retrieval grounding gives the largest single gain</strong> — a real 1B model goes from 28.3% to 63.2% accuracy when answers are grounded in retrieved evidence.</div>
         </li>
         <li>
-          <span class="icon">🔍</span>
-          <div><strong>Only the hybrid gate detects hallucinations</strong> — single techniques flag nothing, while FAISS + DeBERTa NLI caught every wrong answer in the ablation subset.</div>
+          <span class="icon">🛡️</span>
+          <div><strong>The gate is the mitigation</strong> — withholding the riskiest answers raises the accuracy of what is delivered from 64% to 80%.</div>
         </li>
         <li>
-          <span class="icon">⚖️</span>
-          <div><strong>High recall trades off precision</strong> — the gate flags many correct answers conservatively; tuning the threshold τ balances the two.</div>
+          <span class="icon">📈</span>
+          <div><strong>Learning the score beats hand-tuning it</strong> — logistic regression combines semantic entropy, NLI, LLM log-probability and retrieval quality into a single risk probability, improving AUROC from 0.702 to 0.752.</div>
         </li>
         <li>
           <span class="icon">🧪</span>
-          <div><strong>Reproducible by design</strong> — answers come from a simulated LLM (35% hallucination rate), while retrieval and NLI use real production models.</div>
+          <div><strong>Reproducible</strong> — all 12,000 generations are cached; the evaluation, regression and charts re-run from cache in about 5 minutes.</div>
         </li>
       </ul>
     </section>
@@ -788,7 +789,7 @@
       <div class="tech-grid reveal">
         <div class="tech-row">
           <span class="label">LLM Backend</span>
-          <span class="value">SimulatedLLM → Mistral-7B</span>
+          <span class="value">SimulatedLLM → Llama-3.2-1B-Instruct</span>
         </div>
         <div class="tech-row">
           <span class="label">Retrieval</span>
@@ -800,7 +801,7 @@
         </div>
         <div class="tech-row">
           <span class="label">Dataset</span>
-          <span class="value">Synthetic → TruthfulQA (817 Qs)</span>
+          <span class="value">TruthfulQA → 4 benchmarks (3000 Qs)</span>
         </div>
         <div class="tech-row">
           <span class="label">Dashboard</span>
